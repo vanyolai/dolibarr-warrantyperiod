@@ -10,19 +10,16 @@
 require_once DOL_DOCUMENT_ROOT.'/core/triggers/dolibarrtriggers.class.php';
 
 /**
- * Keep shipment warranty expiration synchronized with shipment contents/date.
+ * Keep shipment-line warranty expiration synchronized with shipment contents/date.
  */
 class InterfaceWarrantyPeriodTriggers extends DolibarrTriggers
 {
-	/**
-	 * @param DoliDB $db Database handler
-	 */
 	public function __construct($db)
 	{
 		$this->db = $db;
 		$this->name = preg_replace('/^Interface/i', '', get_class($this));
 		$this->family = 'technic';
-		$this->description = 'Warranty period calculation for shipments';
+		$this->description = 'Warranty period calculation for shipment lines';
 		$this->version = self::VERSIONS['dev'];
 		$this->picto = 'calendar';
 	}
@@ -41,10 +38,11 @@ class InterfaceWarrantyPeriodTriggers extends DolibarrTriggers
 			return 0;
 		}
 
-		if (!in_array($action, array('SHIPPING_CREATE', 'SHIPPING_MODIFY', 'SHIPPING_VALIDATE'), true)) {
+		$shipmentActions = array('SHIPPING_CREATE', 'SHIPPING_MODIFY', 'SHIPPING_VALIDATE');
+		$lineActions = array('LINESHIPPING_INSERT', 'LINESHIPPING_MODIFY');
+		if (!in_array($action, $shipmentActions, true) && !in_array($action, $lineActions, true)) {
 			return 0;
 		}
-
 		if (empty($object->id)) {
 			return 0;
 		}
@@ -54,7 +52,9 @@ class InterfaceWarrantyPeriodTriggers extends DolibarrTriggers
 
 		$entity = !empty($object->entity) ? (int) $object->entity : (int) $conf->entity;
 		$manager = new WarrantyPeriodManager($this->db, $entity);
-		$result = $manager->synchronizeShipment($object);
+		$result = in_array($action, $lineActions, true)
+			? $manager->synchronizeShipmentLine($object)
+			: $manager->synchronizeShipment($object);
 
 		if (empty($result['ok'])) {
 			$this->error = $manager->error ?: $langs->trans('WarrantyPeriodCalculationFailed');
@@ -62,25 +62,10 @@ class InterfaceWarrantyPeriodTriggers extends DolibarrTriggers
 			return -1;
 		}
 
-		if ($result['status'] === 'mixed') {
-			$durations = implode(', ', array_map('intval', $result['durations']));
-			setEventMessages(
-				$langs->trans('WarrantyMixedWarning', $durations),
-				null,
-				'warnings'
-			);
-		} elseif ($result['status'] === 'source_invalid') {
-			setEventMessages(
-				$langs->trans('WarrantySourceFieldInvalid', $result['field']),
-				null,
-				'warnings'
-			);
+		if ($result['status'] === 'source_invalid') {
+			setEventMessages($langs->trans('WarrantySourceFieldInvalid', $result['field']), null, 'warnings');
 		} elseif ($result['status'] === 'target_invalid') {
-			setEventMessages(
-				$langs->trans('WarrantyTargetFieldInvalid', $result['field']),
-				null,
-				'warnings'
-			);
+			setEventMessages($langs->trans('WarrantyTargetFieldInvalid', $result['field']), null, 'warnings');
 		}
 
 		return 1;
