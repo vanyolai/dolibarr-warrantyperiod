@@ -8,15 +8,22 @@ WarrantyPeriod is a Dolibarr external module that calculates warranty expiration
 - PHP 8.1+
 - MariaDB / MySQL and PostgreSQL-compatible Dolibarr database access
 
-Current version: **0.2.0**
+Current version: **0.2.2**
 
 ## How it works
 
 A Product extra field stores the warranty duration in **months**. For every Shipment line the module calculates:
 
 ```text
-shipment date + product warranty months = line warranty expiration
+warranty start + product warranty months = line warranty expiration
 ```
+
+The warranty start date is resolved in this order:
+
+1. actual Shipment sending date (`date_expedition` / `date_shipping`);
+2. planned Shipment date (`date_delivery`) when the actual sending date is still empty.
+
+This is important when a Shipment is opened from an Order: Dolibarr normally propagates the planned date but leaves the actual sending date empty. Once an actual sending date is entered later, it supersedes the planned date and WarrantyPeriod recalculates the line expiration dates.
 
 Both participating extra fields are selected in the module setup:
 
@@ -56,6 +63,8 @@ LINESHIPPING_MODIFY
 
 The implementation writes the line extrafield without opening its own database transaction because Dolibarr invokes these triggers from transactions owned by the Shipment / Shipment-line objects.
 
+The `expeditioncard` hook also pre-fills the calculated warranty date on the Shipment creation form before the Shipment-line records exist.
+
 ## Installation
 
 The repository root is the Dolibarr module root. For a standalone Dolibarr installation:
@@ -73,8 +82,6 @@ Enable **Warranty period** under **Home → Setup → Modules/Applications**, th
 2. Under the Shipping module's **Extra fields (line)** / **Kiegészítő tulajdonságok (tétel)** page, create or choose a date field for the expiration.
 3. In WarrantyPeriod setup select the Product field and the Shipment-line target field.
 4. Save.
-
-The warranty start is currently fixed to the Shipment date.
 
 ## Repository and subtree development model
 
@@ -118,25 +125,3 @@ Normal development direction is:
 ```text
 dolibarr-warrantyperiod -> Dolibarr subtree
 ```
-
-If a change is made in the consumer subtree first, export it before continuing normal development:
-
-```bash
-git subtree split --prefix=htdocs/custom/warrantyperiod -b warrantyperiod-export
-git push warrantyperiod warrantyperiod-export:main
-```
-
-## Scope of 0.2.0
-
-Warranty expiration is tracked per Shipment line. Lot/serial-number-specific warranty dates are not yet stored separately; all serials or batches belonging to the same Shipment line share the line's calculated expiration.
-
-## Development checks
-
-```bash
-find . -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-php tests/date_math_smoke.php
-```
-
-## License
-
-GPL-3.0-or-later.
