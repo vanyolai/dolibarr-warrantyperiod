@@ -1,0 +1,110 @@
+<?php
+/* Copyright (C) 2026 Krisztian Vanyolai
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ */
+
+/**
+ * \file core/modules/modWarrantyPeriod.class.php
+ * \ingroup warrantyperiod
+ * \brief WarrantyPeriod module descriptor.
+ */
+
+include_once DOL_DOCUMENT_ROOT.'/core/modules/DolibarrModules.class.php';
+
+/**
+ * Description and activation class for WarrantyPeriod.
+ */
+class modWarrantyPeriod extends DolibarrModules
+{
+	/**
+	 * @param DoliDB $db Database handler
+	 */
+	public function __construct($db)
+	{
+		global $conf;
+
+		$this->db = $db;
+		$this->numero = 581100;
+		$this->rights_class = 'warrantyperiod';
+		$this->family = 'products';
+		$this->module_position = '90';
+		$this->name = preg_replace('/^mod/i', '', get_class($this));
+		$this->description = 'ModuleWarrantyPeriodDesc';
+		$this->descriptionlong = 'ModuleWarrantyPeriodDescLong';
+		$this->editor_name = 'Krisztian Vanyolai';
+		$this->editor_url = 'https://github.com/vanyolai/dolibarr-warrantyperiod';
+		$this->version = '0.1.0';
+		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
+		$this->picto = 'calendar';
+
+		$this->module_parts = array(
+			'triggers' => 1,
+			'login' => 0,
+			'substitutions' => 0,
+			'menus' => 0,
+			'tpl' => 0,
+			'barcode' => 0,
+			'models' => 0,
+			'printing' => 0,
+			'theme' => 0,
+			'css' => array(),
+			'js' => array(),
+			'hooks' => array(),
+			'moduleforexternal' => 0,
+		);
+
+		$this->dirs = array();
+		$this->config_page_url = array('setup.php@warrantyperiod');
+		$this->hidden = false;
+		$this->depends = array('modExpedition');
+		$this->requiredby = array();
+		$this->conflictwith = array();
+		$this->langfiles = array('warrantyperiod@warrantyperiod');
+		$this->phpmin = array(8, 1);
+		$this->need_dolibarr_version = array(23, 0);
+		$this->need_javascript_ajax = 0;
+
+		// Configuration is intentionally kept on disable/re-enable.
+		$this->const = array(
+			0 => array('WARRANTYPERIOD_PRODUCT_FIELD', 'chaine', '', 'Product extrafield containing warranty months', 0, 'current', 0),
+			1 => array('WARRANTYPERIOD_TARGET_FIELD', 'chaine', '', 'Shipment date extrafield receiving warranty expiration', 0, 'current', 0),
+			2 => array('WARRANTYPERIOD_MIXED_POLICY', 'chaine', 'blank', 'Handling of shipments with different warranty periods', 0, 'current', 0),
+		);
+
+		if (!isModEnabled('warrantyperiod')) {
+			$conf->warrantyperiod = new stdClass();
+			$conf->warrantyperiod->enabled = 0;
+		}
+
+		$this->tabs = array();
+		$this->dictionaries = array();
+		$this->boxes = array();
+		$this->cronjobs = array();
+		$this->rights = array();
+		$this->menu = array();
+	}
+
+	/**
+	 * @param string $options Options
+	 * @return int
+	 */
+	public function init($options = '')
+	{
+		$sql = array();
+		return $this->_init($sql, $options);
+	}
+
+	/**
+	 * @param string $options Options
+	 * @return int
+	 */
+	public function remove($options = '')
+	{
+		$sql = array();
+		return $this->_remove($sql, $options);
+	}
+}
