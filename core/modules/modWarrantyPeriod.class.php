@@ -7,22 +7,10 @@
  * any later version.
  */
 
-/**
- * \file core/modules/modWarrantyPeriod.class.php
- * \ingroup warrantyperiod
- * \brief WarrantyPeriod module descriptor.
- */
-
 include_once DOL_DOCUMENT_ROOT.'/core/modules/DolibarrModules.class.php';
 
-/**
- * Description and activation class for WarrantyPeriod.
- */
 class modWarrantyPeriod extends DolibarrModules
 {
-	/**
-	 * @param DoliDB $db Database handler
-	 */
 	public function __construct($db)
 	{
 		global $conf;
@@ -37,7 +25,7 @@ class modWarrantyPeriod extends DolibarrModules
 		$this->descriptionlong = 'ModuleWarrantyPeriodDescLong';
 		$this->editor_name = 'Krisztian Vanyolai';
 		$this->editor_url = 'https://github.com/vanyolai/dolibarr-warrantyperiod';
-		$this->version = '0.1.0';
+		$this->version = '0.2.0';
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto = 'calendar';
 
@@ -68,11 +56,9 @@ class modWarrantyPeriod extends DolibarrModules
 		$this->need_dolibarr_version = array(23, 0);
 		$this->need_javascript_ajax = 0;
 
-		// Configuration is intentionally kept on disable/re-enable.
 		$this->const = array(
 			0 => array('WARRANTYPERIOD_PRODUCT_FIELD', 'chaine', '', 'Product extrafield containing warranty months', 0, 'current', 0),
-			1 => array('WARRANTYPERIOD_TARGET_FIELD', 'chaine', '', 'Shipment date extrafield receiving warranty expiration', 0, 'current', 0),
-			2 => array('WARRANTYPERIOD_MIXED_POLICY', 'chaine', 'blank', 'Handling of shipments with different warranty periods', 0, 'current', 0),
+			1 => array('WARRANTYPERIOD_TARGET_FIELD', 'chaine', '', 'Shipment-line date extrafield receiving warranty expiration', 0, 'current', 0),
 		);
 
 		if (!isModEnabled('warrantyperiod')) {
@@ -88,20 +74,12 @@ class modWarrantyPeriod extends DolibarrModules
 		$this->menu = array();
 	}
 
-	/**
-	 * @param string $options Options
-	 * @return int
-	 */
 	public function init($options = '')
 	{
 		$sql = array();
 		return $this->_init($sql, $options);
 	}
 
-	/**
-	 * @param string $options Options
-	 * @return int
-	 */
 	public function remove($options = '')
 	{
 		$sql = array();
