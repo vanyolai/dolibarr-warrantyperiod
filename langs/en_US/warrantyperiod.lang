@@ -22,3 +22,4 @@ WarrantySelectValidTargetField=Select a valid Shipment-line date field.
 WarrantySourceFieldInvalid=Configured Product warranty field "%s" no longer exists or is not an integer extra field.
 WarrantyTargetFieldInvalid=Configured Shipment-line warranty field "%s" no longer exists or is not a date extra field.
 WarrantyPeriodCalculationFailed=Shipment-line warranty expiration could not be calculated or saved.
+DocumentModelNautilus=Nautilus - Digital Nautics shipment
