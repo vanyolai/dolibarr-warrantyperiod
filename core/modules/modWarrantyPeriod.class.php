@@ -25,7 +25,7 @@ class modWarrantyPeriod extends DolibarrModules
 		$this->descriptionlong = 'ModuleWarrantyPeriodDescLong';
 		$this->editor_name = 'Krisztian Vanyolai';
 		$this->editor_url = 'https://github.com/vanyolai/dolibarr-warrantyperiod';
-		$this->version = '0.2.0';
+		$this->version = '0.2.1';
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto = 'calendar';
 
@@ -41,7 +41,7 @@ class modWarrantyPeriod extends DolibarrModules
 			'theme' => 0,
 			'css' => array(),
 			'js' => array(),
-			'hooks' => array(),
+			'hooks' => array('expeditioncard'),
 			'moduleforexternal' => 0,
 		);
 
