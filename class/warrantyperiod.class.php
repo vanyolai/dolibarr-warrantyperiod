@@ -113,6 +113,11 @@ class WarrantyPeriodManager
 	 * of the product on that line. Different products may therefore have different
 	 * warranty expiration dates on the same shipment.
 	 *
+	 * The actual shipment/sending date is preferred. If Dolibarr has no actual
+	 * date yet (common for draft Shipments opened from an Order), the planned
+	 * delivery date is used as a provisional warranty start. A later actual date
+	 * automatically supersedes the planned date on the next synchronization.
+	 *
 	 * @param CommonObject $object Shipment object
 	 * @return array<string,mixed>
 	 */
@@ -186,7 +191,7 @@ class WarrantyPeriodManager
 			return $configuration;
 		}
 
-		$sql = "SELECT ed.fk_expedition, ed.fk_product, e.date_expedition";
+		$sql = "SELECT ed.fk_expedition, ed.fk_product, e.date_expedition, e.date_delivery";
 		$sql .= " FROM ".MAIN_DB_PREFIX."expeditiondet AS ed";
 		$sql .= " INNER JOIN ".MAIN_DB_PREFIX."expedition AS e ON e.rowid = ed.fk_expedition";
 		$sql .= " WHERE ed.rowid = ".((int) $line->id);
@@ -203,6 +208,9 @@ class WarrantyPeriodManager
 		}
 
 		$startDate = $this->normalizeDateValue($data->date_expedition);
+		if ($startDate === null) {
+			$startDate = $this->normalizeDateValue($data->date_delivery);
+		}
 
 		return $this->synchronizeLineData(
 			(int) $line->id,
@@ -334,7 +342,7 @@ class WarrantyPeriodManager
 			return null;
 		}
 
-		$sql = "SELECT date_expedition FROM ".MAIN_DB_PREFIX."expedition";
+		$sql = "SELECT date_expedition, date_delivery FROM ".MAIN_DB_PREFIX."expedition";
 		$sql .= " WHERE rowid = ".((int) $shipmentId);
 		$resql = $this->db->query($sql);
 		if (!$resql) {
@@ -343,7 +351,15 @@ class WarrantyPeriodManager
 		}
 
 		$obj = $this->db->fetch_object($resql);
-		return $obj ? $this->normalizeDateValue($obj->date_expedition) : null;
+		if (!$obj) {
+			return null;
+		}
+
+		$startDate = $this->normalizeDateValue($obj->date_expedition);
+		if ($startDate === null) {
+			$startDate = $this->normalizeDateValue($obj->date_delivery);
+		}
+		return $startDate;
 	}
 
 	/** @return string|null */
@@ -354,6 +370,8 @@ class WarrantyPeriodManager
 			$value = $object->date_shipping;
 		} elseif (!empty($object->date_expedition)) {
 			$value = $object->date_expedition;
+		} elseif (!empty($object->date_delivery)) {
+			$value = $object->date_delivery;
 		}
 		return $this->normalizeDateValue($value);
 	}
