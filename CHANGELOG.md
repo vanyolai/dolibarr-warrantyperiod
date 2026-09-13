@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.2
+
+Use the planned Shipment date when Dolibarr has not yet assigned an actual sending date.
+
+- Shipment creation from an Order now pre-fills warranty expiration from the propagated planned date when the sending date is empty.
+- Line and Shipment synchronization use the same fallback, so the calculated value is also persisted instead of being cleared by triggers.
+- An actual sending date always takes precedence and causes the warranty expiration to be recalculated from that date.
+
 ## 0.2.1
 
 Prefill calculated warranty expiration on the Shipment creation form.
