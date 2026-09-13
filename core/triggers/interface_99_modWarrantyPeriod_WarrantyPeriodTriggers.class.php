@@ -52,7 +52,8 @@ class InterfaceWarrantyPeriodTriggers extends DolibarrTriggers
 
 		$entity = !empty($object->entity) ? (int) $object->entity : (int) $conf->entity;
 		$manager = new WarrantyPeriodManager($this->db, $entity);
-		$result = in_array($action, $lineActions, true)
+		$isLineAction = in_array($action, $lineActions, true);
+		$result = $isLineAction
 			? $manager->synchronizeShipmentLine($object)
 			: $manager->synchronizeShipment($object);
 
@@ -68,6 +69,66 @@ class InterfaceWarrantyPeriodTriggers extends DolibarrTriggers
 			setEventMessages($langs->trans('WarrantyTargetFieldInvalid', $result['field']), null, 'warnings');
 		}
 
+		// Warranty applies only to physical products. The generic Shipment-line
+		// extrafield exists on service rows too, so explicitly clear any value that
+		// may have been entered or calculated there. This also cleans legacy values
+		// on the next create/modify/validate synchronization.
+		if (!in_array($result['status'], array('unconfigured', 'source_invalid', 'target_invalid'), true)) {
+			$targetField = trim(getDolGlobalString('WARRANTYPERIOD_TARGET_FIELD'));
+			if ($this->isSafeFieldName($targetField)) {
+				$cleared = $isLineAction
+					? $this->clearServiceLineExpiration((int) $object->id, $targetField)
+					: $this->clearShipmentServiceExpirations((int) $object->id, $targetField);
+				if (!$cleared) {
+					$this->error = $this->db->lasterror();
+				dol_syslog(__METHOD__.' '.$this->error, LOG_ERR);
+					return -1;
+				}
+			}
+		}
+
 		return 1;
+	}
+
+	/** @return bool */
+	private function clearServiceLineExpiration($lineId, $targetField)
+	{
+		if ($lineId <= 0) {
+			return true;
+		}
+
+		$sql = 'UPDATE '.MAIN_DB_PREFIX.'expeditiondet_extrafields';
+		$sql .= ' SET '.$targetField.' = NULL';
+		$sql .= ' WHERE fk_object IN (';
+		$sql .= 'SELECT ed.rowid FROM '.MAIN_DB_PREFIX.'expeditiondet AS ed';
+		$sql .= ' INNER JOIN '.MAIN_DB_PREFIX.'product AS p ON p.rowid = ed.fk_product';
+		$sql .= ' WHERE ed.rowid = '.$lineId.' AND p.fk_product_type = 1';
+		$sql .= ')';
+
+		return (bool) $this->db->query($sql);
+	}
+
+	/** @return bool */
+	private function clearShipmentServiceExpirations($shipmentId, $targetField)
+	{
+		if ($shipmentId <= 0) {
+			return true;
+		}
+
+		$sql = 'UPDATE '.MAIN_DB_PREFIX.'expeditiondet_extrafields';
+		$sql .= ' SET '.$targetField.' = NULL';
+		$sql .= ' WHERE fk_object IN (';
+		$sql .= 'SELECT ed.rowid FROM '.MAIN_DB_PREFIX.'expeditiondet AS ed';
+		$sql .= ' INNER JOIN '.MAIN_DB_PREFIX.'product AS p ON p.rowid = ed.fk_product';
+		$sql .= ' WHERE ed.fk_expedition = '.$shipmentId.' AND p.fk_product_type = 1';
+		$sql .= ')';
+
+		return (bool) $this->db->query($sql);
+	}
+
+	/** @return bool */
+	private function isSafeFieldName($fieldName)
+	{
+		return $fieldName !== '' && (bool) preg_match('/^[A-Za-z][A-Za-z0-9_]*$/', $fieldName);
 	}
 }
