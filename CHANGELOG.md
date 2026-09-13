@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.0
+
+Add the Nautilus shipment PDF model based on Dolibarr Espadon.
+
+- Added `pdf_nautilus.modules.php` as a custom Shipment document model.
+- Keeps Espadon's pagination, header/address handling, totals, notes, product images and printable extra fields.
+- Hides the line-number column and only shows weight/volume when shipment data actually contains it.
+- Uses narrower quantity/unit columns to give product descriptions more room.
+- Keeps the configured WarrantyPeriod target extra field as a dedicated right-hand column.
+- Removes generic lot sell-by/eat-by dates from the line description to avoid confusion with warranty expiration.
+- Keeps lot/serial numbers but suppresses redundant `Quantity: 1` information for serial-number lines and single-lot lines.
+- Retains per-lot quantity when several lots genuinely split a shipment line.
+
 ## 0.2.3
 
 Limit warranty expiration to physical products.
