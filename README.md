@@ -8,7 +8,7 @@ WarrantyPeriod is a Dolibarr external module that calculates warranty expiration
 - PHP 8.1+
 - MariaDB / MySQL and PostgreSQL-compatible Dolibarr database access
 
-Current version: **0.2.2**
+Current version: **0.3.0**
 
 ## How it works
 
@@ -43,6 +43,28 @@ Month addition clamps to the last valid day of the target month:
 2025-01-31 + 1 month   = 2025-02-28
 2024-02-29 + 12 months = 2025-02-28
 ```
+
+## Nautilus shipment PDF
+
+Version 0.3.0 adds **Nautilus**, a Digital Nautics shipment document model based on Dolibarr's Espadon model.
+
+Nautilus intentionally keeps Espadon's mature pagination, addresses, linked-order information, totals, footer, product images, notes and printable line extra fields, while cleaning up the line table for our shipment workflow:
+
+- the line-number column is hidden;
+- weight/volume is shown only if at least one physical product actually has weight or volume data;
+- ordered quantity, unit and shipped quantity use narrower columns so the product description has more room;
+- the configured WarrantyPeriod target field is kept as a dedicated right-hand column;
+- lot/serial information is reduced to the lot/serial number by default;
+- the generic Espadon sell-by/eat-by values are not repeated in the product description, avoiding confusion with the real warranty-expiration field;
+- `Quantity: 1` is omitted for ordinary serial-number rows and for a single lot, but per-lot quantities remain visible when a shipment line is genuinely split across several lots with meaningful quantities.
+
+The model file lives at:
+
+```text
+core/modules/expedition/doc/pdf_nautilus.modules.php
+```
+
+After updating the module, enable/select **Nautilus** under the Shipping module's document-template settings and regenerate the shipment PDF.
 
 ## Triggers
 
