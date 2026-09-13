@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1
+
+Prefill calculated warranty expiration on the Shipment creation form.
+
+- Added an `expeditioncard` hook so Shipment-line warranty dates are visible before the Shipment is created.
+- The prefill uses the selected shipping date and each line product's configured warranty months.
+- User-entered values are preserved when the creation form is redisplayed after validation errors.
+- Persistence triggers remain authoritative after creation/line modification.
+
 ## 0.2.0
 
 Correct the data model to store warranty expiration per Shipment line.
