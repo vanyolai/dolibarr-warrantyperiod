@@ -32,6 +32,12 @@ class ActionsWarrantyPeriod extends CommonHookActions
 	 * Pre-fill the configured warranty-expiration field for an order line while
 	 * Dolibarr renders the shipment creation form.
 	 *
+	 * The actual sending date is preferred. Dolibarr normally leaves that field
+	 * empty when a Shipment is opened from an Order, while the planned delivery
+	 * date is propagated. In that case the planned date is used as a provisional
+	 * warranty start; persistence triggers recalculate from the actual sending
+	 * date later if one is supplied.
+	 *
 	 * @param array<string,mixed> $parameters Hook parameters
 	 * @param CommonObject $object Current source object
 	 * @param string $action Current action
@@ -40,7 +46,7 @@ class ActionsWarrantyPeriod extends CommonHookActions
 	 */
 	public function printObjectLine($parameters, &$object, &$action, $hookmanager)
 	{
-		global $conf, $date_shipping;
+		global $conf, $date_shipping, $date_delivery;
 
 		if ($action !== 'create' || ($parameters['currentcontext'] ?? '') !== 'expeditioncard') {
 			return 0;
@@ -62,6 +68,9 @@ class ActionsWarrantyPeriod extends CommonHookActions
 		}
 
 		$shippingDate = $this->normalizeDate($date_shipping);
+		if ($shippingDate === null) {
+			$shippingDate = $this->normalizeDate($date_delivery);
+		}
 		if ($shippingDate === null) {
 			return 0;
 		}
