@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.3
+
+Limit warranty expiration to physical products.
+
+- Shipment creation form prefill now ignores Service products (`fk_product_type = 1`).
+- Shipment and line triggers clear the configured warranty-expiration field on service lines, including previously stored values.
+- Product lines continue to be recalculated on create, modify and validation.
+
 ## 0.2.2
 
 Use the planned Shipment date when Dolibarr has not yet assigned an actual sending date.
