@@ -22,3 +22,4 @@ WarrantySelectValidTargetField=Válassz érvényes dátum típusú Szállítóle
 WarrantySourceFieldInvalid=A beállított "%s" Termék garanciaidő mező már nem létezik, vagy nem egész szám típusú.
 WarrantyTargetFieldInvalid=A beállított "%s" Szállítólevél-tétel garanciamező már nem létezik, vagy nem dátum típusú.
 WarrantyPeriodCalculationFailed=A tétel garancia-lejáratát nem sikerült kiszámítani vagy elmenteni.
+DocumentModelNautilus=Nautilus - Digital Nautics szállítólevél
