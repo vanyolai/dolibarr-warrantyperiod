@@ -29,8 +29,9 @@ class ActionsWarrantyPeriod extends CommonHookActions
 	}
 
 	/**
-	 * Pre-fill the configured warranty-expiration field for an order line while
-	 * Dolibarr renders the shipment creation form.
+	 * Pre-fill the configured warranty-expiration field for a physical product
+	 * while Dolibarr renders the shipment creation form. Service lines are
+	 * intentionally ignored.
 	 *
 	 * The actual sending date is preferred. Dolibarr normally leaves that field
 	 * empty when a Shipment is opened from an Order, while the planned delivery
@@ -75,9 +76,12 @@ class ActionsWarrantyPeriod extends CommonHookActions
 			return 0;
 		}
 
+		// WarrantyPeriod applies only to physical products (fk_product_type = 0).
 		$sql = 'SELECT pe.'.$sourceField.' AS warranty_months';
-		$sql .= ' FROM '.MAIN_DB_PREFIX.'product_extrafields AS pe';
-		$sql .= ' WHERE pe.fk_object = '.$productId;
+		$sql .= ' FROM '.MAIN_DB_PREFIX.'product AS p';
+		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields AS pe ON pe.fk_object = p.rowid';
+		$sql .= ' WHERE p.rowid = '.$productId;
+		$sql .= ' AND p.fk_product_type = 0';
 		$resql = $this->db->query($sql);
 		if (!$resql) {
 			return 0;
