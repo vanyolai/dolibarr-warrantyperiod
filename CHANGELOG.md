@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.1
+
+Fix external Shipment document-model discovery.
+
+- Shipment-card hook initialization now explicitly adds `/warrantyperiod/` to the runtime model search paths.
+- Nautilus therefore remains discoverable even when `MAIN_MODULE_WARRANTYPERIOD_MODELS` was not reconstructed correctly from module constants.
+- Keeps the normal Dolibarr module-parts registration as the primary mechanism; the runtime path is a defensive fallback only.
+
 ## 0.3.0
 
 Add the Nautilus shipment PDF model based on Dolibarr Espadon.
