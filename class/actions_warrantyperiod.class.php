@@ -25,7 +25,18 @@ class ActionsWarrantyPeriod extends CommonHookActions
 	/** @param DoliDB $db Database handler */
 	public function __construct($db)
 	{
+		global $conf;
+
 		$this->db = $db;
+
+		// Dolibarr normally rebuilds this path from MAIN_MODULE_WARRANTYPERIOD_MODELS.
+		// Keep a runtime fallback on Shipment pages as well: document generation
+		// happens later in the same request and commonGenerateDocument() searches
+		// $conf->modules_parts['models'] for external model roots.
+		if (!isset($conf->modules_parts['models']) || !is_array($conf->modules_parts['models'])) {
+			$conf->modules_parts['models'] = array();
+		}
+		$conf->modules_parts['models']['warrantyperiod'] = '/warrantyperiod/';
 	}
 
 	/**
